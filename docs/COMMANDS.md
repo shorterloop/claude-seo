@@ -687,6 +687,16 @@ Multi-page Lighthouse audit via Unlighthouse (extension, MIT, no API quota). **P
 
 ---
 
+### `/seo content-sentinel <url|file>`
+
+Brand voice and style audit (extension). **Prerequisites:** Content Sentinel extension installed.
+```
+/seo content-sentinel https://example.com
+/seo content-sentinel ./draft.txt
+```
+
+---
+
 ## Quick Reference
 
 | Command | Use Case |
@@ -722,3 +732,4 @@ Multi-page Lighthouse audit via Unlighthouse (extension, MIT, no API quota). **P
 | `/seo profound [command]` | LLM citation tracking with time-series data (extension) |
 | `/seo bing [command] <url>` | Bing Webmaster Tools + IndexNow URL submission (extension) |
 | `/seo unlighthouse <url>` | Multi-page Lighthouse runner, runs locally (extension) |
+| `/seo content-sentinel <url\|file>` | Brand voice and style audit (extension) |
