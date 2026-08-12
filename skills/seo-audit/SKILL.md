@@ -97,7 +97,8 @@ Write `{domain}-audit/audit-data.json` with this shape so `claude-seo run google
           "bucket": "fix|consider",
           "severity": "Critical|High|Medium|Low|Info",
           "description": "Evidence-backed detail",
-          "recommendation": "Specific fix"
+          "recommendation": "Specific fix",
+          "urls": ["/path/the/finding/applies/to"]
         }
       ]
     }
@@ -142,6 +143,12 @@ to learn which bucket a finding landed in.
 - **`policy.applied`** records that the gate ran. An envelope carrying no
   `policy` block was produced without the filter, and a consumer should treat its
   recommendations as unfiltered rather than as clean.
+- **`urls`** on every finding: the pages it applies to, as site-relative paths.
+  Write `[]` for a genuinely sitewide finding, and list every affected page for a
+  finding that spans several -- do not write one entry and describe the rest in
+  the title. Never omit the key. A finding nobody can locate cannot be applied,
+  verified, or reverted, and "applies everywhere" and "nobody wrote it down" must
+  not arrive looking the same.
 
 Each `declined` entry mirrors a row of the policy's Declined table, plus
 `source`: the sub-skill whose output the recommendation came from, so a

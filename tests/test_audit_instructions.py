@@ -83,6 +83,8 @@ def test_audit_envelope_carries_the_three_bucket_contract() -> None:
     assert '"declined"' in envelope
     assert '"policy"' in envelope
     assert '"applied"' in envelope
+    # A finding nobody can locate cannot be applied, verified, or reverted.
+    assert '"urls"' in envelope
     # An absent `declined` and an empty one mean different things; the skill has
     # to say which, or the distinction is lost the first time a run declines
     # nothing. Collapse whitespace so the assertion survives re-wrapping.
