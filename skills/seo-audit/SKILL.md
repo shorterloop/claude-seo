@@ -17,7 +17,9 @@ metadata:
 1. **Render homepage**: use `claude-seo run render_page.py <url> --mode auto --json` to capture raw HTML, rendered HTML, extracted text, SPA status, and accessibility data when needed
 2. **Detect business type**: analyze homepage signals per seo orchestrator
 3. **Crawl site**: follow internal links up to 500 pages, respect robots.txt
-4. **Delegate to subagents** (if available, otherwise run inline sequentially):
+4. **Delegate to subagents** (if available, otherwise run inline sequentially). Include
+   in every subagent prompt: "Apply the seo-human-first policy at
+   `skills/seo-human-first/SKILL.md` to your recommendations before returning them."
    - `seo-technical` -- robots.txt, sitemaps, canonicals, Core Web Vitals, security headers
    - `seo-content` -- E-E-A-T, readability, thin content, AI citation readiness
    - `seo-schema` -- detection, validation, generation recommendations
@@ -36,7 +38,11 @@ metadata:
    - `seo-content-sentinel` -- Brand voice, banned phrases, and style audit (spawn when content-sentinel extension is installed)
 5. **Score** -- aggregate into SEO Health Score (0-100)
 6. **Persist audit artifacts** -- write all outputs under `{domain}-audit/`
-7. **Report** -- generate prioritized action plan and optional PDF/HTML report
+7. **Filter** -- load `skills/seo-human-first/SKILL.md` and gate every recommendation
+   through the five-question policy. Failures move to the Declined table with the
+   pattern matched and the rewrite offered, never dropped silently
+8. **Report** -- generate the action plan in the three-bucket contract (Fix / Consider /
+   Declined) and optional PDF/HTML report
 
 ## Crawl Configuration
 
@@ -52,7 +58,7 @@ Delay between requests: 1 second
 ## Output Files
 
 - `{domain}-audit/FULL-AUDIT-REPORT.md`: Comprehensive findings
-- `{domain}-audit/ACTION-PLAN.md`: Prioritized recommendations (Critical > High > Medium > Low)
+- `{domain}-audit/ACTION-PLAN.md`: Three-bucket action plan -- **Fix** (findability; prioritized Critical > High > Medium > Low), **Consider** (substance; reader problem stated first), **Declined** (policy; pattern matched + rewrite offered). An empty Declined table is stated explicitly, not omitted
 - `{domain}-audit/audit-data.json`: Structured audit envelope for report generation
 - `{domain}-audit/findings/*.md`: Per-category specialist findings (`technical.md`, `content.md`, `schema.md`, `performance.md`, `visual.md`, etc.)
 - `{domain}-audit/screenshots/`: Desktop + mobile captures (if Playwright available)

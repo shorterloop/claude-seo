@@ -697,6 +697,24 @@ Brand voice and style audit (extension). **Prerequisites:** Content Sentinel ext
 
 ---
 
+### `/seo human-first [path|url]`
+
+Editorial policy filter. Strips growth-hack, content-farm, and manipulation tactics from
+SEO output while keeping the technical and findability work. **No prerequisites** — it is
+core, and it runs automatically on every deliverable this repo produces, so you rarely
+need to invoke it directly.
+
+```
+/seo human-first                              # load the policy for this session
+/seo human-first ./example.com-audit/ACTION-PLAN.md   # re-filter an existing report
+/seo human-first https://example.com          # flag written-for-crawler copy on a live page
+```
+
+Output is always three buckets: **Fix** (findability), **Consider** (substance),
+**Declined** (policy, with the rewrite offered instead). Nothing is dropped silently.
+
+---
+
 ## Quick Reference
 
 | Command | Use Case |
@@ -733,3 +751,4 @@ Brand voice and style audit (extension). **Prerequisites:** Content Sentinel ext
 | `/seo bing [command] <url>` | Bing Webmaster Tools + IndexNow URL submission (extension) |
 | `/seo unlighthouse <url>` | Multi-page Lighthouse runner, runs locally (extension) |
 | `/seo content-sentinel <url\|file>` | Brand voice and style audit (extension) |
+| `/seo human-first [path\|url]` | Editorial policy filter, applied automatically to every deliverable |

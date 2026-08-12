@@ -4,7 +4,7 @@
 
 This repository contains **Claude SEO**, a Tier 4 Claude Code skill for comprehensive
 SEO analysis across all industries. It follows the Agent Skills open standard and the
-3-layer architecture (directive, orchestration, execution). 26 sub-skills (21 core +
+3-layer architecture (directive, orchestration, execution). 27 sub-skills (22 core +
 1 orchestrator + 1 framework integration + 3 extension mirrors), 19 sub-agents (15 core +
 1 framework integration + 3 extension mirrors), and an extensible reference
 system cover technical SEO, content quality,
@@ -23,7 +23,7 @@ claude-seo/
   .claude-plugin/
     plugin.json                    # Plugin manifest (v2.2.4)
     marketplace.json               # Marketplace catalog for distribution
-  skills/                            # 26 sub-skills (auto-discovered)
+  skills/                            # 27 sub-skills (auto-discovered)
     seo/                           # Main orchestrator skill
       SKILL.md                     # Entry point, routing table, core rules
       references/                  # On-demand knowledge files (13 files)
@@ -60,6 +60,8 @@ claude-seo/
     seo-ecommerce/               # E-commerce SEO (v1.9.0, by Matej Marjanovic)
       SKILL.md
       references/                # Marketplace API endpoints
+    seo-human-first/             # Editorial policy filter applied to every deliverable
+      SKILL.md
     seo-dataforseo/SKILL.md     # Live SEO data via DataForSEO MCP (extension mirror)
     seo-image-gen/              # AI image generation for SEO assets (extension mirror)
       SKILL.md
@@ -234,6 +236,38 @@ Part of the Claude Code skill family:
 2. **Industry Detection**: Auto-detect SaaS, e-commerce, local, publisher, agency
 3. **Parallel Execution**: Full audits spawn up to 15 subagents simultaneously
 4. **Extension System**: DataForSEO, Firecrawl, Banana, Ahrefs, SE Ranking, Profound, Bing Webmaster, and Unlighthouse extensions
+5. **Human-First Policy**: every recommendation is gated through `seo-human-first` before it is emitted (see below)
+
+## Human-First SEO Policy (fork overlay)
+
+This fork adds one skill upstream does not have: `skills/seo-human-first/`. It is a
+constraint layer, not an analysis. Every SEO deliverable produced from this repository
+-- audit action plan, content brief, content plan, cluster plan, programmatic plan,
+competitor page -- is gated through it before it is emitted.
+
+**Rules for any agent working in this repo:**
+
+1. Before emitting any SEO recommendation, load `skills/seo-human-first/SKILL.md` and
+   apply it. Run the underlying skill in full first; the policy filters its output, it
+   does not replace the analysis.
+2. Report in the three-bucket contract: **Fix** (findability), **Consider** (substance),
+   **Declined** (policy, with the pattern matched and the rewrite offered). Never drop a
+   filtered recommendation silently -- an empty Declined table is stated explicitly, not
+   omitted.
+3. When spawning any `seo-*` subagent, include this line in the subagent prompt: "Apply
+   the seo-human-first policy at `skills/seo-human-first/SKILL.md` to your
+   recommendations before returning them."
+4. Highest-risk skills, per the policy's own table: `seo-competitor-pages`,
+   `seo-programmatic`, `seo-content-brief`, `seo-cluster`, `seo-geo`, `seo-plan`. Apply
+   the filter hardest there.
+5. Never emit a word-count target, a keyword-density target, or a publishing-cadence
+   target, regardless of what the parent skill's scoring produces.
+
+This section is the pipeline's enforcement point. Headless runs (`claude -p`) have no
+user-level `~/.claude/CLAUDE.md`, so the rule must live here to travel with the repo.
+
+`seo-human-first` and `seo-content-sentinel` are complementary: sentinel scores the
+voice of copy that already exists, this policy governs what we are allowed to recommend.
 
 ## Repository Topology (public + private)
 
