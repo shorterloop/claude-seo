@@ -37,12 +37,17 @@ metadata:
    - `seo-ecommerce` -- Product schema, marketplace intelligence (spawn when E-commerce industry detected)
    - `seo-content-sentinel` -- Brand voice, banned phrases, and style audit (spawn when content-sentinel extension is installed)
 5. **Score** -- aggregate into SEO Health Score (0-100)
-6. **Persist audit artifacts** -- write all outputs under `{domain}-audit/`
+6. **Persist audit artifacts** -- write all outputs under `{domain}-audit/`. Specialist
+   findings and raw data are final here; the action plan and the envelope's policy
+   fields are not, because the filter has not run yet
 7. **Filter** -- load `skills/seo-human-first/SKILL.md` and gate every recommendation
    through the five-question policy. Failures move to the Declined table with the
    pattern matched and the rewrite offered, never dropped silently
 8. **Report** -- generate the action plan in the three-bucket contract (Fix / Consider /
-   Declined) and optional PDF/HTML report
+   Declined) and optional PDF/HTML report. Write the same contract into
+   `audit-data.json` as data (`bucket`, `declined`, `policy`) so the buckets do not
+   exist only as markdown headings -- step 6's artifacts are rewritten here, after
+   the filter, not before it
 
 ## Crawl Configuration
 
@@ -59,7 +64,7 @@ Delay between requests: 1 second
 
 - `{domain}-audit/FULL-AUDIT-REPORT.md`: Comprehensive findings
 - `{domain}-audit/ACTION-PLAN.md`: Three-bucket action plan -- **Fix** (findability; prioritized Critical > High > Medium > Low), **Consider** (substance; reader problem stated first), **Declined** (policy; pattern matched + rewrite offered). An empty Declined table is stated explicitly, not omitted
-- `{domain}-audit/audit-data.json`: Structured audit envelope for report generation
+- `{domain}-audit/audit-data.json`: Structured audit envelope for report generation and for downstream tooling. Carries the same three-bucket contract as data: `bucket` on every finding, an always-present `declined` array, and a `policy` block recording that the gate ran
 - `{domain}-audit/findings/*.md`: Per-category specialist findings (`technical.md`, `content.md`, `schema.md`, `performance.md`, `visual.md`, etc.)
 - `{domain}-audit/screenshots/`: Desktop + mobile captures (if Playwright available)
 - **PDF Report** (recommended): Generate a professional A4 PDF using `claude-seo run google_report.py --type full --data {domain}-audit/audit-data.json --domain <domain> --output-dir {domain}-audit/`. This produces a white-cover enterprise report with TOC, executive summary, charts (Lighthouse gauges, query bars, index donut), metric cards, threshold tables, prioritized recommendations with effort estimates, and implementation roadmap. Always offer PDF generation after completing an audit.
@@ -76,6 +81,11 @@ Write `{domain}-audit/audit-data.json` with this shape so `claude-seo run google
     "top_findings": [],
     "quick_wins": []
   },
+  "policy": {
+    "skill": "seo-human-first",
+    "version": "2.2.4",
+    "applied": true
+  },
   "categories": [
     {
       "name": "Technical SEO",
@@ -84,11 +94,20 @@ Write `{domain}-audit/audit-data.json` with this shape so `claude-seo run google
       "findings": [
         {
           "title": "Finding title",
+          "bucket": "fix|consider",
           "severity": "Critical|High|Medium|Low|Info",
           "description": "Evidence-backed detail",
           "recommendation": "Specific fix"
         }
       ]
+    }
+  ],
+  "declined": [
+    {
+      "recommendation": "The recommendation as the underlying skill generated it",
+      "pattern": "The policy pattern it matched",
+      "offered_instead": "The rewrite offered, or null if the policy offers none",
+      "source": "seo-content-brief"
     }
   ],
   "action_plan": {
@@ -105,6 +124,28 @@ Write `{domain}-audit/audit-data.json` with this shape so `claude-seo run google
   }
 }
 ```
+
+### The policy fields are not optional
+
+`ACTION-PLAN.md` states the three-bucket contract in prose. The envelope states
+the same contract as data, so a downstream consumer never has to parse headings
+to learn which bucket a finding landed in.
+
+- **`bucket`** on every finding. `fix` -- the change only affects how the page is
+  found (question 1 of the policy). `consider` -- it changes what the page says
+  and passed all five questions. A recommendation that failed the gate is not a
+  finding at all; it belongs in `declined`.
+- **`declined`** is always present. Write `[]` when nothing was declined; never
+  omit the key. An absent `declined` and an empty one must not read the same --
+  one says the filter ran and removed nothing, the other says nothing at all
+  about whether it ran. Same rule as the Declined table in the markdown.
+- **`policy.applied`** records that the gate ran. An envelope carrying no
+  `policy` block was produced without the filter, and a consumer should treat its
+  recommendations as unfiltered rather than as clean.
+
+Each `declined` entry mirrors a row of the policy's Declined table, plus
+`source`: the sub-skill whose output the recommendation came from, so a
+repeatedly-filtered skill is visible rather than merely quiet.
 
 ## Scoring Weights
 

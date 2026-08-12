@@ -143,6 +143,27 @@ silently; the user overrides the filter, not the other way round.
 If the Declined table is empty, say so explicitly — it means the audit was clean,
 which is information.
 
+### When the deliverable also writes structured data
+
+Prose is for the reader; a markdown heading is not a contract a program can
+check. Any deliverable that writes a machine-readable file alongside the markdown
+must carry the same three buckets as fields — otherwise the policy survives only
+in the half of the output that nothing downstream reads.
+
+For `/seo audit` that file is `{domain}-audit/audit-data.json`:
+
+| Field | Rule |
+|---|---|
+| `bucket` on every finding | `fix` (findability — passed question 1) or `consider` (substance — passed all five) |
+| `declined[]` | Always present. `[]` when nothing was declined, never omitted |
+| `policy.applied` | Records that this gate ran at all |
+
+The always-present rule is the one that matters. An absent `declined` and an
+empty one say different things — *"the filter removed nothing"* versus *"nothing
+is known about whether the filter ran"* — and a consumer that cannot tell them
+apart will read an ungated report as a clean one. It is the same reason the
+markdown states an empty table explicitly instead of dropping the section.
+
 ## Scoring adjustments
 
 The parent skills score content on proxies that reward the exact behaviour this

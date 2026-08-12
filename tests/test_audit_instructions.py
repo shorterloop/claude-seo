@@ -68,3 +68,31 @@ def test_audit_agents_document_output_dir_findings_contract() -> None:
 def test_seo_audit_report_command_keeps_outputs_in_audit_dir() -> None:
     text = (REPO_ROOT / "skills" / "seo-audit" / "SKILL.md").read_text(encoding="utf-8")
     assert "--output-dir {domain}-audit/" in text
+
+
+def test_audit_envelope_carries_the_three_bucket_contract() -> None:
+    """The buckets must exist as data, not only as markdown headings.
+
+    ACTION-PLAN.md states the contract in prose. A downstream consumer reading
+    audit-data.json would otherwise have to parse headings to learn which bucket
+    a finding landed in, or -- worse -- read an ungated envelope as a clean one.
+    """
+    text = (REPO_ROOT / "skills" / "seo-audit" / "SKILL.md").read_text(encoding="utf-8")
+    envelope = text[text.index("## Structured Audit Data Envelope"):text.index("## Scoring Weights")]
+    assert '"bucket": "fix|consider"' in envelope
+    assert '"declined"' in envelope
+    assert '"policy"' in envelope
+    assert '"applied"' in envelope
+    # An absent `declined` and an empty one mean different things; the skill has
+    # to say which, or the distinction is lost the first time a run declines
+    # nothing. Collapse whitespace so the assertion survives re-wrapping.
+    flat = " ".join(envelope.split())
+    assert "`declined`** is always present" in flat
+    assert "never omit the key" in flat
+
+
+def test_human_first_defines_the_structured_contract() -> None:
+    text = (REPO_ROOT / "skills" / "seo-human-first" / "SKILL.md").read_text(encoding="utf-8")
+    assert "audit-data.json" in text, "the policy must define the machine-readable contract it gates"
+    for field in ("`bucket` on every finding", "`declined[]`", "`policy.applied`"):
+        assert field in text
