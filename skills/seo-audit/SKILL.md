@@ -95,6 +95,7 @@ Write `{domain}-audit/audit-data.json` with this shape so `claude-seo run google
         {
           "title": "Finding title",
           "bucket": "fix|consider",
+          "rule_id": "brand-spelling",
           "severity": "Critical|High|Medium|Low|Info",
           "description": "Evidence-backed detail",
           "recommendation": "Specific fix",
@@ -153,6 +154,41 @@ to learn which bucket a finding landed in.
 Each `declined` entry mirrors a row of the policy's Declined table, plus
 `source`: the sub-skill whose output the recommendation came from, so a
 repeatedly-filtered skill is visible rather than merely quiet.
+
+### `rule_id` — optional, and omitting it is the safe answer
+
+A downstream pipeline may hold a named rule with a fixed remedy. Tagging a
+finding with the matching name lets it be merged with what that pipeline found
+independently, instead of arriving as a second, differently-worded copy of the
+same problem.
+
+**Omit `rule_id` unless the finding is unmistakably an instance of the named
+rule.** An untagged finding is handled as a judgement call needing a human, which
+is the correct treatment for almost everything an audit produces. A wrong tag
+claims a mechanical remedy for something that needs a person, so a guess costs
+more than a blank.
+
+| `rule_id` | Only when |
+|---|---|
+| `brand-spelling` | a known brand is misspelt in a title or meta description |
+| `missing-canonical` | the page has no `link[rel=canonical]` |
+| `invalid-jsonld` | a structured-data block does not parse |
+| `broken-internal-href` | an internal link returns 4xx and a correct target exists |
+| `broken-internal-href-no-successor` | it returns 410 and nothing replaces it |
+| `heading-level-promotion` | the heading hierarchy skips a level, text unchanged |
+| `internal-link-insertion` | the anchor phrase is **already** in the body copy |
+| `missing-alt-text` | an `img` has absent or empty `alt` |
+| `no-editorial-inbound-links` | nothing but navigation links to the page |
+| `price-inconsistency` | two pages state the same price differently |
+| `slow-ttfb` | measured time to first byte is high |
+
+Anything else — voice, page deletion, hub overlap, "this H1 does not meet the
+visitor" — takes no `rule_id`. There is no name for those on purpose.
+
+Note what tagging does NOT do: it does not decide how a change is applied. The
+consuming pipeline owns that, in a file a human approves, and it is expected to
+confirm a tagged finding against its own measurements before treating it as
+anything but a draft. `rule_id` is a claim, not an instruction.
 
 ## Scoring Weights
 

@@ -93,6 +93,24 @@ def test_audit_envelope_carries_the_three_bucket_contract() -> None:
     assert "never omit the key" in flat
 
 
+def test_rule_id_is_optional_and_omitting_it_is_documented_as_safe() -> None:
+    """A wrong tag claims a mechanical remedy for something needing a person.
+
+    The vocabulary lets a downstream pipeline merge our findings with its own.
+    But a guessed tag is worse than a blank one: untagged means "a human decides",
+    which is the correct handling for almost everything an audit produces.
+    """
+    text = (REPO_ROOT / "skills" / "seo-audit" / "SKILL.md").read_text(encoding="utf-8")
+    envelope = text[text.index("## Structured Audit Data Envelope"):text.index("## Scoring Weights")]
+    flat = " ".join(envelope.split())
+    assert '"rule_id"' in envelope
+    assert "Omit `rule_id` unless" in flat
+    # The tag must not read as an instruction to apply anything.
+    assert "a claim, not an instruction" in flat
+    for rule in ("brand-spelling", "internal-link-insertion", "price-inconsistency"):
+        assert rule in envelope
+
+
 def test_human_first_defines_the_structured_contract() -> None:
     text = (REPO_ROOT / "skills" / "seo-human-first" / "SKILL.md").read_text(encoding="utf-8")
     assert "audit-data.json" in text, "the policy must define the machine-readable contract it gates"
