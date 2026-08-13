@@ -73,6 +73,27 @@ Delay between requests: 1 second
 
 Write `{domain}-audit/audit-data.json` with this shape so `claude-seo run google_report.py --type full --data {domain}-audit/audit-data.json --domain <domain> --output-dir {domain}-audit/` can generate a report even when Google API data is unavailable:
 
+### `links` — internal link proposals as data, not prose
+
+An internal-linking plan written only as a markdown table has to be transcribed
+by hand before anything can act on it. That transcription is a second source of
+truth: it goes stale silently as copy moves, and a mistyped phrase is
+indistinguishable from a sentence that changed. Emit the plan as data as well as
+prose.
+
+**Every entry must satisfy one constraint: `phrase` is ALREADY in `from`'s body
+copy, verbatim and case-exact.** A link that needs a sentence written to carry it
+is editorial work and belongs in the report, not here — downstream tooling treats
+this array as mechanical precisely because no copy is being rewritten.
+
+- `phrase` is quoted from the page, not paraphrased. Downstream matching is
+  case-sensitive and whole-phrase.
+- Omit the key entirely if this audit did not look for internal links. An absent
+  `links` and `"links": []` are different claims: the second says the audit
+  looked and found none, and consumers use it to decide whether a previously
+  approved link plan has been withdrawn.
+- One entry per link. If one sentence names five products, that is five entries.
+
 ```json
 {
   "summary": {
@@ -110,6 +131,14 @@ Write `{domain}-audit/audit-data.json` with this shape so `claude-seo run google
       "pattern": "The policy pattern it matched",
       "offered_instead": "The rewrite offered, or null if the policy offers none",
       "source": "seo-content-brief"
+    }
+  ],
+  "links": [
+    {
+      "from": "/page/whose/copy/already/contains/the/phrase",
+      "to": "/page/the/phrase/should/link/to",
+      "phrase": "anchor text, verbatim from the body copy",
+      "why": "why this link is worth making"
     }
   ],
   "action_plan": {

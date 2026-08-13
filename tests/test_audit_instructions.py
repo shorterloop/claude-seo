@@ -116,3 +116,41 @@ def test_human_first_defines_the_structured_contract() -> None:
     assert "audit-data.json" in text, "the policy must define the machine-readable contract it gates"
     for field in ("`bucket` on every finding", "`declined[]`", "`policy.applied`"):
         assert field in text
+
+
+def test_envelope_declares_links_as_data():
+    """The internal-linking plan must be emitted as data, not only as prose.
+
+    A plan that exists only in a markdown table has to be transcribed by hand
+    before anything can act on it, and that copy goes stale silently: a phrase
+    that stopped being in the copy and a phrase that was mistyped look identical
+    downstream.
+    """
+    text = (REPO_ROOT / "skills" / "seo-audit" / "SKILL.md").read_text(encoding="utf-8")
+    assert '"links"' in text, "the envelope must carry a links array"
+    for field in ('"from"', '"to"', '"phrase"'):
+        assert field in text, f"a link entry needs {field}"
+
+
+def test_links_state_the_already_present_constraint():
+    """A link needing a sentence written is editorial, not mechanical.
+
+    Downstream tooling treats this array as safe to execute precisely because no
+    copy is rewritten to accommodate an anchor. If the skill stops saying so, the
+    array stops meaning that.
+    """
+    text = (REPO_ROOT / "skills" / "seo-audit" / "SKILL.md").read_text(encoding="utf-8")
+    assert 'ALREADY in' in text
+    assert 'verbatim' in text
+
+
+def test_absent_links_is_distinguished_from_empty():
+    """Absent and empty are different claims, and the difference is load-bearing.
+
+    An absent key means the audit did not look. An empty array means it looked
+    and found none — which is what lets a consumer decide whether a previously
+    approved link plan has been withdrawn rather than merely unexamined.
+    """
+    text = (REPO_ROOT / "skills" / "seo-audit" / "SKILL.md").read_text(encoding="utf-8")
+    assert 'Omit the key entirely' in text
+    assert '"links": []' in text
