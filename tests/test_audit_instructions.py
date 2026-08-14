@@ -93,18 +93,25 @@ def test_audit_envelope_carries_the_three_bucket_contract() -> None:
     assert "never omit the key" in flat
 
 
-def test_rule_id_is_optional_and_omitting_it_is_documented_as_safe() -> None:
-    """A wrong tag claims a mechanical remedy for something needing a person.
+def test_rule_id_is_required_for_listed_rules_and_absent_otherwise() -> None:
+    """Both halves, and the second is not the cautious version of the first.
 
-    The vocabulary lets a downstream pipeline merge our findings with its own.
-    But a guessed tag is worse than a blank one: untagged means "a human decides",
-    which is the correct handling for almost everything an audit produces.
+    Worded as "omit unless unmistakable", this read as advice to stay quiet: two
+    real audits tagged 3 findings of 44 and then 2 of 46, leaving untagged a title
+    that misspelt a competitor's brand — the exact condition on the first row. A
+    listed rule has a fixed remedy waiting for it, so declining to name it does
+    not make the finding safer, it makes it invisible to the only check that could
+    verify it.
     """
     text = (REPO_ROOT / "skills" / "seo-audit" / "SKILL.md").read_text(encoding="utf-8")
     envelope = text[text.index("## Structured Audit Data Envelope"):text.index("## Scoring Weights")]
     flat = " ".join(envelope.split())
     assert '"rule_id"' in envelope
-    assert "Omit `rule_id` unless" in flat
+    # Affirmative for a match...
+    assert "If a finding meets the condition in the table below, tag it" in flat
+    # ...and still closed for anything not listed.
+    assert "If it does not, leave `rule_id` out" in flat
+    assert "Do not reach" in flat
     # The tag must not read as an instruction to apply anything.
     assert "a claim, not an instruction" in flat
     for rule in ("brand-spelling", "internal-link-insertion", "price-inconsistency"):

@@ -184,18 +184,29 @@ Each `declined` entry mirrors a row of the policy's Declined table, plus
 `source`: the sub-skill whose output the recommendation came from, so a
 repeatedly-filtered skill is visible rather than merely quiet.
 
-### `rule_id` — optional, and omitting it is the safe answer
+### `rule_id` — required for the rules in the table, absent everywhere else
 
 A downstream pipeline may hold a named rule with a fixed remedy. Tagging a
 finding with the matching name lets it be merged with what that pipeline found
 independently, instead of arriving as a second, differently-worded copy of the
 same problem.
 
-**Omit `rule_id` unless the finding is unmistakably an instance of the named
-rule.** An untagged finding is handled as a judgement call needing a human, which
-is the correct treatment for almost everything an audit produces. A wrong tag
-claims a mechanical remedy for something that needs a person, so a guess costs
-more than a blank.
+**If a finding meets the condition in the table below, tag it. If it does not,
+leave `rule_id` out.** Both halves matter equally, and the second is not the
+cautious version of the first.
+
+An earlier wording said to omit the tag unless the match was "unmistakable", and
+that read as advice to stay quiet: across two real audits it tagged 3 findings
+out of 44 and then 2 out of 46, while leaving untagged a title that misspelt a
+competitor's brand name — the exact condition on the first row. A rule listed
+here has a fixed remedy waiting for it, so declining to name it does not make the
+finding safer. It makes it invisible to the only check that could verify it.
+
+The reason a wrong tag is cheap, and worth saying plainly so this is not read as
+permission to guess: the consumer confirms every tagged finding against its own
+independent measurements before acting. A tag that does not reproduce is dropped.
+So the cost of a wrong tag is a dropped finding, and the cost of a missing tag on
+a real match is a fix that never happens. Tag what matches. Do not reach.
 
 | `rule_id` | Only when |
 |---|---|
