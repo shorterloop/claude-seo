@@ -204,7 +204,7 @@ more than a blank.
 | `invalid-jsonld` | a structured-data block does not parse |
 | `broken-internal-href` | an internal link returns 4xx and a correct target exists |
 | `broken-internal-href-no-successor` | it returns 410 and nothing replaces it |
-| `heading-level-promotion` | the heading hierarchy skips a level, text unchanged |
+| `heading-level-skip` | the heading hierarchy skips a level, text unchanged |
 | `internal-link-insertion` | the anchor phrase is **already** in the body copy |
 | `missing-alt-text` | an `img` has absent or empty `alt` |
 | `no-editorial-inbound-links` | nothing but navigation links to the page |
